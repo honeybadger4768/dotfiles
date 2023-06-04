@@ -1,0 +1,58 @@
+#!/usr/bin/bash
+
+# variables
+config=$HOME/.config/hypr
+scripts=$config/scripts
+
+
+sleep 1
+killall xdg-desktop-portal-hyprland
+killall xdg-desktop-portal-wlr
+killall xdg-desktop-portal
+/usr/lib/xdg-desktop-portal-hyprland &
+sleep 2
+/usr/lib/xdg-desktop-portal &
+
+# notification daemon
+#dunst &
+
+MAKOCONFIG="$HOME/.config/hypr/mako/config"
+
+if [[ ! $(pidof mako) ]]; then
+	mako --config ${MAKOCONFIG} &
+fi
+
+
+# battery notification
+$scripts/default/battery_notif &
+
+# screen locking when idle
+$scripts/default/idle_handler &
+
+
+
+# effects
+# $scripts/rgb &
+
+# other
+## persistent clipboard
+
+swaybg -m fill -i $HOME/.config/hypr/themes/winter/wallpapers/Snow-valley.jpg &
+dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP &
+dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP &
+
+$scripts/portal &
+
+wl-clip-persist --clipboard regular &
+wl-paste --watch cliphist store &
+## make kde connect work  (source: https://www.reddit.com/r/kde/comments/l6t6qu/please_make_kdeconnectcli_work_in_headless_moded/)
+/usr/lib/kdeconnectd -platform offscreen & 
+## Gnome authentication
+/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
+
+# ... this might not be necessary anymore ? idk
+dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP &
+systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP &
+
+# launch portals after executing the above
+# $scripts/default/launch_portals &
